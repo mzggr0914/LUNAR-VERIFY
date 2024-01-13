@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>유튜브 채널 인증</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/logo.ico') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            color: white;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 24px;
+            overflow: hidden;
+        }
+
+        small {
+            color: #cecece;
+            opacity: 0.7;
+            font-size: 15px;
+        }
+
+        #wrap {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        class Wave {
+            constructor(canvas, ctx, ext) {
+                this.canvas = canvas;
+                this.ctx = ctx;
+                this.points = [];
+                this.pointCount = 10;
+                this.minRadius = 50;
+                this.maxRadius = 100;
+                this.minDeltaRadius = 5;
+                this.maxDeltaRadius = 10;
+                this.centerX = this.canvas.width / 2;
+                this.centerY = this.canvas.height / 2;
+                Object.assign(this, ext);
+            }
+
+            init(color = "lightblue") {
+                this.color = color;
+                let degree = 0;
+                let deltaDegree = 360 / this.pointCount;
+                for (let i = 0; i < this.pointCount; i++) {
+                    let radius = this.randomInt(this.minRadius, this.maxRadius);
+                    let x = this.centerX + radius * Math.cos(degree * Math.PI / 180);
+                    let y = this.centerY + radius * Math.sin(degree * Math.PI / 180);
+                    let deltaRadius = this.randomInt(this.minDeltaRadius, this.maxDeltaRadius);
+                    this.points.push({
+                        x: x,
+                        y: y,
+                        radius: radius,
+                        deltaRadius: deltaRadius,
+                        degree: degree
+                    });
+                    degree += deltaDegree;
+                }
+                requestAnimationFrame(this.animate.bind(this));
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                let prev = this.points[this.points.length - 1];
+                this.ctx.beginPath();
+                this.ctx.fillStyle = this.color;
+                this.ctx.moveTo(prev.x, prev.y);
+                this.points.forEach(point => {
+                    this.ctx.quadraticCurveTo(prev.x, prev.y, (prev.x + point.x) / 2, (prev.y + point.y) / 2);
+                    prev = { ...point };
+                    point.radius += point.deltaRadius;
+                    point.x = this.centerX + point.radius * Math.cos(point.degree * Math.PI / 180);
+                    point.y = this.centerY + point.radius * Math.sin(point.degree * Math.PI / 180);
+                });
+                this.ctx.fill();
+                this.ctx.closePath();
+                requestAnimationFrame(this.animate.bind(this));
+            }
+
+            randomInt(m, M) {
+                return Math.floor(Math.random() * (M - m + 1)) + m;
+            }
+        }
+        async function Main() {
+            let canvas = document.getElementById('wave');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let ctx = canvas.getContext('2d');
+            let wave = new Wave(canvas, ctx);
+
+                const { value: DiscordUserName } = await Swal.fire({
+                    title: "아이디 입력",
+                    input: "text",
+                    inputAttributes: {
+                        pattern: /^[a-zA-Z0-9]+$/,
+                    },
+                    inputLabel: "디스코드 사용자명을 입력하세요",
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return "필수 입력 항목입니다.";
+                        }
+                        else if (!(/^[a-z0-9_.]+$/.test(value))) {
+                            return "올바르지 않은 아이디입니다.";
+                        }
+                    }
+                });
+                if (DiscordUserName) {
+                    $.ajax({
+                        url: "/VerifyUser",
+                        headers: { 'UserName': DiscordUserName, 'type': "email" },
+                        type: "POST",
+                        success: (data, textStatus, xhr) => {
+                            document.getElementById("title").innerHTML = "인증에 성공하였습니다.";
+                            document.getElementById("text").innerHTML = '<h3 id="text">인증한 사용자 : ' + DiscordUserName + '<br>사용자 이메일 : ' + data + '</h3>';
+                            document.getElementById("iconpath").setAttribute("d", "M805.297 254.016L436.672 622.641L218.734 404.703L144.922 478.484L436.422 769.984L436.672 769.766L436.891 769.984L879.078 327.797L805.297 254.016Z");
+                            wave.init('#218fee');
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            document.getElementById("title").innerHTML = "인증에 실패하였습니다.";
+                            document.getElementById("text").innerHTML = jqXHR.responseText;
+                            document.getElementById("iconpath").setAttribute("d", "M334.906 261.125L261.125 334.906L438.219 512L261.125 689.094L334.906 762.875L512 585.781L689.094 762.875L762.875 689.094L585.781 512L762.875 334.906L689.094 261.125L512 438.219L334.906 261.125Z");
+                            wave.init('#ff4500');
+                        }
+                    })
+                }
+            
+        }
+        Main()
+    </script>
+
+    <div id="wrap">
+        <svg width="300px" height="300px" version="1.1" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <g fill="#218fee" opacity="1">
+                <path id="iconpath"  fill="#ffffff" d="." />
+            </g>
+        </svg>
+        <p id="title"></p>
+        <h3 id="text"></h3>
+    </div>
+    <canvas id="wave" width="100" height="100"></canvas>
+
+</body>
+
+</html>
