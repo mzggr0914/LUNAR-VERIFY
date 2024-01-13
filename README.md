@@ -12,7 +12,7 @@ OAuth2 이메일 인증 지원
 
 ! 사용자의 채널아이디 또는 이메일은 Firebase에 보관됩니다.
 
-- 이는 사용자 중복가입을 방지하기 위함이며 사용자의 정보를 유출하지 않습니다.
+- 이는 사용자 중복가입을 방지하기 위함이며 사용자의 정보는 관리자에게만 전송됩니다.
 ```
 # 사용법
 ```diff
@@ -37,4 +37,11 @@ Config:
 ! Youtube 문서는 해당 기능을 사용하지 않을 것이어도 필드가 비어있으면 오류가 발생하니 공백문자라도 추가해야 합니다.
 ```
 
+# Credit
+디스코드 봇 사용을 위한 라이브러리 : discord-net/Discord.Net  
+웹 사이트를 열기위한 라이브러리 : dajuric/simple-http
+Firestore db사용을 위한 라이브러리 : Google.Cloud.Firestore
+<br/>
+<br/>  
+<br/>
 discord : `.lunarlight`
