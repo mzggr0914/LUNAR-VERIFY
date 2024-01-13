@@ -39,8 +39,8 @@ Config:
 
 # Credit
 디스코드 봇 사용을 위한 라이브러리 : discord-net/Discord.Net  
-웹 사이트를 열기위한 라이브러리 : dajuric/simple-http
-Firestore db사용을 위한 라이브러리 : Google.Cloud.Firestore
+웹 사이트를 열기위한 라이브러리 : dajuric/simple-http  
+Firestore db사용을 위한 라이브러리 : Google.Cloud.Firestore  
 <br/>
 <br/>  
 <br/>
